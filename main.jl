@@ -1,4 +1,8 @@
+
+## BiLSTM-CNN-CRF-Named-Entity-Recognizer-in-Julia
 ##main file 
+
+
 using Knet
 using JLD
 #include(Knet.dir("test/gpu.jl"))
@@ -353,29 +357,6 @@ function getbilstmoutput(lstms,weights,inputsent;bucketsize=30)
     flstmout = Array(rnnforw(lstms[1],weights[2],input)[1])
     blstmout = Array(rnnforw(lstms[2],weights[5],revinput)[1])
     outs = weights[3] * vcat(flstmout[:,1],blstmout[:,end]).+weights[4]
-    #println("sent")
-    #println(inputsent[1])
-    #println("input1")
-    #println(inputsent[1])
-    #flush(stdout)
-    #println(inputsent[1][1])
-    #println(value(input[:,1]))
-    #println("input2")
-    #println(inputsent[1][2])
-    #println(value(input[:,5]))
-    #println("ilk out")
-    #println(outs)
-    #println("rnnforws")
-    #println(flstmout)
-    #println(value(weights[3]))
-    #println("bias")
-    #println(value(weights[4]))
-    #println("weights2")
-    #println(weights[3])
-    #flush(stdout)
-    #println("out no bias")
-    #println(weights[3] * vcat(flstmout[:,1],blstmout[:,end]))
-    #flush(stdout)
     if bucketsize ==1
         return outs
     end
@@ -383,24 +364,6 @@ function getbilstmoutput(lstms,weights,inputsent;bucketsize=30)
         outs = hcat(outs,(weights[3]*vcat(flstmout[:,i],blstmout[:,end-i+1]).+weights[4]))
     end
     allouts = reshape(outs,(size(outs)[1],size(outs)[2],1))
-    #print("arda")
-    #print("pad vector")
-    #println(value(weights[end-1][:,1]))
-    #println("lstmout1")
-    #println(value(flstmout[:,1]))
-    #println("lstmout2")
-    #println(value(flstmout[:,5]))
-    #println("blstmout1")
-    #println(value(blstmout[:,end]))
-    #println("blstmout2")
-    #println(value(blstmout[:,end-4]))
-    #println("out1")
-    #println(value(allouts[:,1]))
-    #println("out2")
-    #println(value(allouts[:,5]))
-    #println(summary(inputsent))
-    #println(length(inputsent))
-    #flush(stdout)
     for j = 2:length(inputsent)
         input =KnetArray(getsentvec(weights[1],weights[end-1],weights[end],weights[end-2],inputsent[j],bucketsize))
         revinput = getrevvec(input)
@@ -590,12 +553,6 @@ function viterbidecode(tagscores,transitions)
     tagprobs = tagscores
     transprobs = transitions
     bestscores = [tagprobs[:,1].+transprobs[end-1,1:end-2]]
-    #println(taglist)
-    #println(transitions)
-    #println(tagscores)
-    #println("ilk scores")
-    #println(bestscores)
-    #flush(stdout)
     bestparents = []
     for i in 2:length(tagprobs[1,:])
         bestscore = []
@@ -920,31 +877,7 @@ for i in 1:EPOCHS
         for i =2:length(tags)
             taginds1 = cat(dims=2,taginds1,getsenttaginds(tags[i],t2i))
         end
-        #println("tags")
-        #println(summary(taginds1))
-        #println(summary(sents))
-        #flush(stdout)
         grads = lossgradient(model,sents,taginds1,(flstm,blstm))
-
-        #println("grads ne alemde")
-        #println(value(grads))
-        #flush(stdout)
-        #preds = my_preds([sents[1]],(flstm,blstm),model,taglist)
-        #println(taginds1[:,1])
-        #flush(stdout)
-        #println(taglist)
-        #println(taginds1[:,1])
-        #println(tags[1])
-        #println(preds)
-        #println("transitions")
-        #println(model[end])
-        #flush(stdout)
-        #println(sents)
-        #println(taginds1)
-        #println(summary(grads))
-        #println(grads)
-        #flush(stdout)
-        #lr = 0.015/(1+0.05*i)
         update!(model, grads)
         #println("transitions")
         #println(value(model[end]))
